@@ -11,21 +11,24 @@ def store(request):
     if request.user.is_authenticated:
         customer=request.user.customer
         orders= Order.objects.filter(customer = customer, complete=False)
+        #cartItems = orders.get_cart_items
+
+        #items=order.orderitem_set.all() or we can write
+        #items=order.orderitem.all()
         items=[]
         for order in orders:
             for item in order.orderitem.all():
                 items.append(item)
-        cost = sum(a.get_cart_total for a in orders)
+        #cost = sum(a.get_cart_total for a in orders)
         Titem=sum(a.get_cart_item for a in orders)
-        cartItems=orders.get_cart_items
     else:
-        cartItems=orders['get_cart_items']
-        print(cartItems)
+        """ cartItems=orders['get_cart_items']
+        print(cartItems) """
         items=[]
         cost=0
         Titem=0
-        
-    context = {'products':products}
+    products=Product.objects.all()
+    context = {'products':products,'Titem':Titem}
     return render(request, 'store/store.html', context)
 
 
@@ -69,22 +72,27 @@ def updateItem(request):
     Data=json.loads(request.body)
     productId=Data['productId']
     action=Data['action']
-    print('Action:', action)
-    print('ProductId:', productId)
-    
     customer=request.user.customer
-    product=Product.objects.get(id=productId)
-    orders= Order.objects.filter(customer = customer, complete=False)
-    orderItem,create=OrderItem.objects.filter(order = orders, product=product)
+    product=Product.objects.filter(id=productId).first()
+    order= Order.objects.filter(customer = customer, complete=False).first()
+    orderItems, create= OrderItem.objects.get_or_create(order= order, product=product)
     
     if action=='add':
-        orderItem.quantity=(orderItem.quantity + 1)
+        try:
+            orderItems.quantity=(orderItems.quantity + 1)
+            orderItems.save()
+        except:
+            pass
     elif action=='remove':
-        orderItem.quantity=(orderItem.quantity-1)
-    orderItem.save()
+        try:
+            orderItems.quantity=(orderItems.quantity-1)
+            orderItems.save()
+        except:
+            pass
     
-    if orderItem.quantity<=0:
-       orderItem.delete() 
-        
+    if orderItems.quantity<=0:
+       orderItems.delete()
+       
+         
     return JsonResponse('Item was added',safe=False)
     
