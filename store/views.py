@@ -24,6 +24,7 @@ def store(request):
     else:
         """ cartItems=orders['get_cart_items']
         print(cartItems) """
+        shipping=False
         items=[]
         cost=0
         Titem=0
@@ -44,6 +45,7 @@ def cart(request):
         cost = sum(a.get_cart_total for a in orders)
         Titem=sum(a.get_cart_item for a in orders)
     else:
+        shipping=False
         items=[]
         cost=0
         Titem=0
@@ -61,11 +63,13 @@ def checkout(request):
                 items.append(item)
         cost = sum(a.get_cart_total for a in orders)
         Titem=sum(a.get_cart_item for a in orders)
+        shipping = True if True in [x.shipping for x in orders] else False
     else:
+        shipping=False
         items=[]
         cost=0
         Titem=0
-    context ={'items':items, 'cost': cost,'Titem':Titem}
+    context ={'items':items, 'cost': cost,'Titem':Titem, 'shipping': shipping}
     return render(request, 'store/checkout.html', context)
 
 def updateItem(request):

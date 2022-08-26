@@ -1,3 +1,4 @@
+from ast import Return
 import email
 from itertools import product
 from statistics import mode
@@ -43,14 +44,26 @@ class Order(models.Model):
     @property
     def get_cart_total(self):
         orderitems=self.orderitem.all()
-        total=sum([item.get_total for item in orderitems]) 
+        total=sum([item.get_total for item in orderitems])
         return total
     
     @property
     def get_cart_item(self):
         orderitems=self.orderitem.all()
-        total=sum([item.quantity for item in orderitems]) 
+        
+        total=sum([item.quantity for item in orderitems])
         return total
+    
+    @property
+    def shipping(self):
+        shipping=False
+        orderitems=self.orderitem.all()
+        print(orderitems)
+        for i in orderitems:
+            if i.product.digital==False:
+                shipping=True
+        return shipping
+    
 class OrderItem(models.Model):
     product=models.ForeignKey(Product,on_delete=models.SET_NULL,null=True)
     order=models.ForeignKey(Order,on_delete=models.SET_NULL,null=True, related_name='orderitem')

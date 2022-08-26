@@ -67,4 +67,10 @@
 			</div>
 		</div>
 	</div>
+<script type="text/javascript">
+	var Shipping='{{shipping}}'
+	if (Shipping=='False'){
+		document.getElementById('shipping-info').innerHTML= ''
+	}		
+</script>
 {% endblock content %}
