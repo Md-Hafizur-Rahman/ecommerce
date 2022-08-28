@@ -1,4 +1,4 @@
-from django import template
+''' from django import template
 from store.models import Order
 
 
@@ -13,4 +13,4 @@ def total_item(context):
         order = Order.objects.filter(customer=usr, complete=False).first()
         return order.get_cart_item
     else:
-        return 0
+        return 0 '''
