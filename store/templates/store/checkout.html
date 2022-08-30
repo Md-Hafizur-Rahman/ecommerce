@@ -65,7 +65,7 @@
                 {% endfor %}
                 <h5>Type of Items:   {{items|length}}</h5>
                 <h5>Total Products:   {{Titem}}</h5>
-                <h5>Total:   ${{cost|floatformat:2}}</h5>
+                <h5>Total:   ${{order.get_cart_total|floatformat:2}}</h5>
             </div>
         </div>
     </div>

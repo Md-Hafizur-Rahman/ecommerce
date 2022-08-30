@@ -13,7 +13,7 @@
 					<tr>
 						<th><h5>Type of Items: <strong>{{items|length}}</strong></h5></th>
 						<th><h5>Totol Products: <strong>{{Titem}}</strong></h5></th>
-						<th><h5>Total:<strong> ${{cost|floatformat:2}}</strong></h5></th>
+						<th><h5>Total:<strong> ${{order.get_cart_total|floatformat:2}}</strong></h5></th>
 						
 						<th>
 							<a  style="float:right; margin:5px;" class="btn btn-success" href="{% url 'checkout' %}">Checkout</a>

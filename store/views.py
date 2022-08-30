@@ -1,9 +1,11 @@
 from argparse import Action
+from cmath import cos
 import datetime
 from email.headerregistry import Address
 from venv import create
 from django.shortcuts import render
 from .models import *
+from .utils import cookieCart
 
 from django.http import JsonResponse
 import json
@@ -37,47 +39,49 @@ def store(request):
     products=Product.objects.all()
     context = {'products':products,'Titem':Titem}
     return render(request, 'store/store.html', context)
-
-
 def cart(request):
     if request.user.is_authenticated:
         customer=request.user.customer
-        orders,created= Order.objects.get_or_create(customer = customer, complete=False)
+        orders= Order.objects.filter(customer = customer, complete=False)
         items=[]
-        items = orders.orderitem.all()
-        ''' for order in orders:
+        cost=0
+        for order in orders:
             for item in order.orderitem.all():
-                items.append(item) '''
-        cost = orders.get_cart_total
-        Titem = orders.get_cart_item
+                items.append(item)
+        cost = sum(a.get_cart_total for a in orders)
+        Titem=sum(a.get_cart_item for a in orders)
+        context = {'items':items, 'order': order,'Titem':Titem}
     else:
-        items = []
         order = {'get_cart_total':0, 'get_cart_items':0, 'shipping': False}
-        Titem = order['get_cart_items']
-         
-    context = {'items':items, 'cost': cost,'Titem':Titem}
+        cookieData=cookieCart(request)
+        Titem=cookieData['Titem']
+        order=cookieData['order']
+        items=cookieData['items']
+        context = {'items':items, 'order': order,'Titem':Titem}
     return render(request, 'store/cart.html', context)
-
 def checkout(request):
     if request.user.is_authenticated:
         customer=request.user.customer
-        orders, created = Order.objects.get_or_create(customer=customer, complete=False)
+        orders= Order.objects.filter(customer = customer, complete=False)
         items=[]
-        items = orders.orderitem.all()
-        Titem = orders.get_cart_item
-        ''' for order in orders:
+        cost=0
+        for order in orders:
             for item in order.orderitem.all():
-                items.append(item) '''
-        cost = orders.get_cart_total
-        Titem=orders.get_cart_item
+                items.append(item)
+        cost = sum(a.get_cart_total for a in orders)
+        Titem=sum(a.get_cart_item for a in orders)
+        
         shipping=False
-        shipping=True if True in [orders.shipping] else False
+        shipping = True if True in [x.shipping for x in orders] else False 
+        ''' shipping=True if True in [orders.shipping] else False '''
+        context ={'items':items, 'order': order,'Titem':Titem,'shipping':shipping}
         ''' shipping = True if True in [x.shipping for x in orders] else False '''
     else:
         items = []
+        shipping=False
         order = {'get_cart_total':0, 'get_cart_items':0, 'shipping': False}
         Titem = order['get_cart_items']
-    context ={'items':items, 'cost': cost,'Titem':Titem,'shipping':shipping}
+        context ={'items':items, 'order': order,'Titem':Titem,'shipping':shipping}
     return render(request, 'store/checkout.html', context)
 
 def updateItem(request):
