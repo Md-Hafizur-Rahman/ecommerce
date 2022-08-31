@@ -6,7 +6,7 @@ from unicodedata import name
 from venv import create
 from django.shortcuts import render
 from .models import *
-from .utils import cookieCart,cartData
+from .utils import cookieCart,cartData,guestOrder
 
 from django.http import JsonResponse
 import json
@@ -69,28 +69,23 @@ def processOrder(request):
     if request.user.is_authenticated:
         customer=request.user.customer
         order = Order.objects.get(customer=customer, complete=False)
-        total=float(data['form']['total'])
-        order.transaction_id=transaction_id
-        print("Transaction id ",order.transaction_id)
-        if total==float(order.get_cart_item):
-            order.complete=True
-        order.save()
-        
-        if order.shipping:
-            ShippingAddress.objects.create(
-            customer=customer,
-            #order=order,
-            address=data['shipping']['address'],
-            city=data['shipping']['city'],
-            state=data['shipping']['state'],
-            zipcode=data['shipping']['zipcode'],
-        )
           
     else:
-        print('User is not logged in...')
-        print('COOKIES:',request.COOKIES)
-        name=data['form']['name']
-        email=['form']['email']
-        cookieData=cookieCart(request)
-        items=cookieData['item']
+        customer,order=guestOrder(request,data)
+        
+    total=float(data['form']['total'])
+    order.transaction_id=transaction_id
+    if total==float(order.get_cart_item):
+        order.complete=True
+    order.save()
+    if order.shipping:
+        ShippingAddress.objects.create(
+        customer=customer,
+        order=order,
+        address=data['shipping']['address'],
+        city=data['shipping']['city'],
+        state=data['shipping']['state'],
+        zipcode=data['shipping']['zipcode'],
+    )
+    
     return JsonResponse('payment successfull!',safe=False)
