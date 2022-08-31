@@ -2,86 +2,36 @@ from argparse import Action
 from cmath import cos
 import datetime
 from email.headerregistry import Address
+from unicodedata import name
 from venv import create
 from django.shortcuts import render
 from .models import *
-from .utils import cookieCart
+from .utils import cookieCart,cartData
 
 from django.http import JsonResponse
 import json
 
 def store(request):
-    products=Product.objects.all()
-    # Azad is present
-    if request.user.is_authenticated:
-        customer=request.user.customer
-        orders, created = Order.objects.get_or_create(customer=customer, complete=False)
-        #cartItems = orders.get_cart_items
-        items = orders.orderitem.all()
-        Titem = orders.get_cart_item
-        
-
-
-        #items=order.orderitem_set.all() or we can write
-        #items=order.orderitem.all()
-        items=[]
-        ''' for order in orders:
-            for item in order.orderitem.all():
-                items.append(item) '''
-        #cost = sum(a.get_cart_total for a in orders)
-        ''' Titem=sum(a.get_cart_item for a in orders) '''
-    else:
-        """ cartItems=orders['get_cart_items']
-        print(cartItems) """
-        items = []
-        order = {'get_cart_total':0, 'get_cart_items':0, 'shipping': False}
-        Titem = order['get_cart_items']
+    data=cartData(request)
+    Titem=data['Titem']
+    
     products=Product.objects.all()
     context = {'products':products,'Titem':Titem}
     return render(request, 'store/store.html', context)
 def cart(request):
-    if request.user.is_authenticated:
-        customer=request.user.customer
-        orders= Order.objects.filter(customer = customer, complete=False)
-        items=[]
-        cost=0
-        for order in orders:
-            for item in order.orderitem.all():
-                items.append(item)
-        cost = sum(a.get_cart_total for a in orders)
-        Titem=sum(a.get_cart_item for a in orders)
-        context = {'items':items, 'order': order,'Titem':Titem}
-    else:
-        order = {'get_cart_total':0, 'get_cart_items':0, 'shipping': False}
-        cookieData=cookieCart(request)
-        Titem=cookieData['Titem']
-        order=cookieData['order']
-        items=cookieData['items']
-        context = {'items':items, 'order': order,'Titem':Titem}
+    data=cartData(request)
+    Titem=data['Titem']
+    order=data['order']
+    items=data['items']
+    context = {'items':items, 'order': order,'Titem':Titem}
     return render(request, 'store/cart.html', context)
 def checkout(request):
-    if request.user.is_authenticated:
-        customer=request.user.customer
-        orders= Order.objects.filter(customer = customer, complete=False)
-        items=[]
-        cost=0
-        for order in orders:
-            for item in order.orderitem.all():
-                items.append(item)
-        cost = sum(a.get_cart_total for a in orders)
-        Titem=sum(a.get_cart_item for a in orders)
-        
-        shipping=False
-        shipping = True if True in [x.shipping for x in orders] else False 
-        ''' shipping=True if True in [orders.shipping] else False '''
-        context ={'items':items, 'order': order,'Titem':Titem,'shipping':shipping}
-        ''' shipping = True if True in [x.shipping for x in orders] else False '''
-    else:
-        items = []
-        shipping=False
-        order = {'get_cart_total':0, 'get_cart_items':0, 'shipping': False}
-        Titem = order['get_cart_items']
-        context ={'items':items, 'order': order,'Titem':Titem,'shipping':shipping}
+    data=cartData(request)
+    Titem=data['Titem']
+    order=data['order']
+    items=data['items']
+    shipping=False
+    context ={'items':items, 'order': order,'Titem':Titem}
     return render(request, 'store/checkout.html', context)
 
 def updateItem(request):
@@ -138,4 +88,9 @@ def processOrder(request):
           
     else:
         print('User is not logged in...')
+        print('COOKIES:',request.COOKIES)
+        name=data['form']['name']
+        email=['form']['email']
+        cookieData=cookieCart(request)
+        items=cookieData['item']
     return JsonResponse('payment successfull!',safe=False)

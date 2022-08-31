@@ -38,3 +38,28 @@ def cookieCart(request):
             except:
                 pass
         return {'Titem':Titem,'order':order,'items':items}
+def cartData(request):
+    if request.user.is_authenticated:
+        customer=request.user.customer
+        orders= Order.objects.filter(customer = customer, complete=False)
+        items=[]
+        cost=0
+        for order in orders:
+            for item in order.orderitem.all():
+                items.append(item)
+        cost = sum(a.get_cart_total for a in orders)
+        Titem=sum(a.get_cart_item for a in orders)
+        
+        shipping=False
+        shipping = True if True in [x.shipping for x in orders] else False 
+        ''' shipping=True if True in [orders.shipping] else False '''
+        context ={'items':items, 'order': order,'Titem':Titem,'shipping':shipping}
+        ''' shipping = True if True in [x.shipping for x in orders] else False '''
+    else:
+        cookieData=cookieCart(request)
+        Titem=cookieData['Titem']
+        order=cookieData['order']
+        items=cookieData['items']
+        shipping=False
+    return {'Titem':Titem,'order':order,'items':items}
+    
