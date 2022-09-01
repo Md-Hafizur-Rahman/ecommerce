@@ -72,7 +72,6 @@
     </div>
     <script src="https://www.paypal.com/sdk/js?client-id=AYj9YHkIGHOrOXupSo1Zg8BupxFezYsBGjtFFMch_J-yMBbkxaiQv_QUuA1ilOBqYC8LFRIUwLj5JdW-&currency=USD&disable-funding=credit"></script>
 <script>
-    var total= '{{Titem}}'
     paypal.Buttons({
         style: {
             color: "blue",
@@ -85,7 +84,7 @@
           return actions.order.create({
             purchase_units: [{
               amount: {
-                value: parseFloat(total).toFixed(2)
+                value: parseFloat('{{order.get_cart_total}}').toFixed(2)
               }
             }]
           });
@@ -100,7 +99,7 @@
       //This function displays payment buttons on your web page.
 </script>
 <script type="text/javascript">
-    
+    var total= '{{order.get_cart_total}'
     var Shipping='{{shipping}}'
     if (Shipping=='False'){
         document.getElementById('shipping-info').innerHTML= ''
